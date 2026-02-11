@@ -1,0 +1,27 @@
+#comment
+d_effect = {
+	set_variable = {
+		v = -1.1
+	}
+}
+#comment
+struct  =   { #comment
+
+	a   =    10
+	color = rgb { 0 0 0 }
+
+	{
+		asd
+	}
+	#comment
+	less< bigger
+	set_variable = {
+		variable = 0.5
+	}
+}
+
+struct={}
+
+broken<=value
+
+text_val = "text = \" "
