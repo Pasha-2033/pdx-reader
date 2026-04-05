@@ -19,9 +19,16 @@ struct  =   { #comment
 		variable = 0.5
 	}
 }
-
+ struct =   	{}
 struct={}
 
 broken<=value
 
 text_val = "text = \" "
+
+
+abc+={abc{abc
+
+tech_effect|my_tech
+
+abc={number=-0.1}

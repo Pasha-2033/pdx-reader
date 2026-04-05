@@ -1,3 +1,4 @@
+
 import re
 from enum import Enum
 
@@ -28,31 +29,35 @@ def is_connection(t: token) -> bool:
 
 
 class num_state(Enum):
-	value = r"\d+"
-	value_connection = r"\."
-	value_sign_or_connection = r"\.|\-"
-def may_be_numeric(tokens: list[token], start: int = 0) -> int:
+	value = r"\d+|\."
+	sign = r"\-"
+def may_be_numeric(tokens: list[token], start: int = 0, end: int = -1) -> int:
+	if start < 0:
+		raise ValueError(f"start index can`t be negative (was {start})")
 	i = start
-	while (i < len(tokens)):
-		if not re.match(r"(\d+)|[\.-]", tokens[i].text):
+	end = len(tokens) if end < 0 else min(len(tokens), end)
+	while (i < end):
+		if not re.match(r"(\d+)|[\.\-]", tokens[i].text):
 			break
 		i = i + 1
 	return i - start
-def numeric_until(tokens: list[token]) -> int:
-	expected = num_state.value
-	for i in range(len(tokens) - 1, -1, -1):
-		if re.match(expected.value, tokens[i].text):
+def numeric_until(tokens: list[token], end: int = -1, start: int = 0) -> int:
+	expected = num_state.sign.value
+	end = len(tokens) if end < 0 else min(len(tokens), end)
+	start = max(0, start)
+	for i in range(start + 1, end + 1):
+		if re.match(expected.value, tokens[-i].text):
 			if expected == num_state.value:
 				expected = num_state.value_sign_or_connection
 			elif expected == num_state.value_connection:
 				expected = num_state.value
-			elif re.match(num_state.value_connection.value, tokens[i].text):
+			elif re.match(num_state.value_connection.value, tokens[-i].text):
 				expected = num_state.value
 			else:
 				expected = num_state.value_connection
 		else:
-			return len(tokens) - i - 1
-	return len(tokens)
+			return i - 1
+	return end - start
 
 			
 			
@@ -105,14 +110,15 @@ def line_to_tokens(text: str, line_num: int, file: str) -> list[token]:
 file = "./test.txt"
 with open(file, "r") as f:
 	num_expr = [
-		token("1", 0, 0, ""), 
+		token("-", 0, 0, ""),
 		token(".", 0, 0, ""),
-		token("2", 0, 0, ""), 
+		token("5", 0, 0, ""),
+		token(".", 0, 0, ""),
+		token("4", 0, 0, "")
 	]
 	print(
 		may_be_numeric(
-			num_expr,
-			0
+			num_expr
 		)
 	)
 	print(
