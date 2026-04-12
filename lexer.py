@@ -1,9 +1,10 @@
 import re
 from enum import Enum
+from utilities import renumerate, nenumerate
 
 class connection(Enum):
 	bracket = r"\{\}\[\]"
-	special = r"\.:@\?\|"
+	special = r"\.:@\?\|\"\\"
 	arithmetic = r"<=>"
 	sign = r"\-"
 
@@ -15,7 +16,7 @@ class connection(Enum):
 		return "".join(result)
 
 re_connection = re.compile(connection.regex())
-re_empty = re.compile(r"[ \t]")
+re_empty = re.compile(r"[\s\n]") #TODO: rename
 
 class token:
 	value:		str
@@ -37,36 +38,25 @@ class block:
 		self.token_list = token_list
 		self.path = path
 
-"""
-def lex_line(text: str, line: int, token_list: list[token] = []) -> list[token]:
-	prev_index = 0
-	for index, value in enumerate(text):
-		if value == "#":
-			token_list.append(token(text[index:], line + 1, index + 1, True))
-			break
-		elif re_empty.match(value):
-			if (prev_index != index):
-				token_list.append(token(text[prev_index:index], line + 1, prev_index + 1, True))
-				prev_index = index + 1
-			else:
-				prev_index += 1
-		elif re_connection.match(value):
-			if prev_index != index:
-				token_list.append(token(text[prev_index:index], line + 1, prev_index + 1, False))
-			token_list.append(token(value, line + 1, index + 1, True))
-			prev_index = index + 1
-		elif index == len(text) - 1:
-			if token_list:
-				token_list[-1].has_end = False
-			token_list.append(token(text[prev_index:], line + 1, prev_index + 1, True))
+def lex_comment(text: str, pos_offset: int, line: int, token_list: list[token] = []) -> list[token]:
+	last_index = len(token_list)
+	prev_index = len(text)
+	for index, value in renumerate(text):
+		if value == '#':
+			token_list.insert(last_index, token(text[index:prev_index], line, pos_offset + index))
+			prev_index = index
+		elif value == '\n':
+			token_list.insert(last_index, token(value, line, pos_offset + index))
+			prev_index = index
 	return token_list
-"""
 
 def lex_line(text: str, line: int, token_list: list[token] = []) -> list[token]:
 	prev_index = 0
 	for index, value in enumerate(text):
-		if value == "#":
-			token_list.append(token(text[index:], line, index))
+		if value == '#':
+			if prev_index != index:
+				token_list.append(token(text[prev_index:index], line, prev_index))
+			lex_comment(text[index:], index, line, token_list)
 			break
 		elif re_empty.match(value):
 			if (prev_index != index):
@@ -87,10 +77,7 @@ def lex_line(text: str, line: int, token_list: list[token] = []) -> list[token]:
 def lex_file(path: str, token_list: list[token] = []) -> block:
 	with open(path, "r") as f:
 		for index, line in enumerate(f):
-			if line[-1] == "\n": #EOF doesn`t have "\n"
-				lex_line(line[:-1], index, token_list)
-			else:
-				lex_line(line, index, token_list)
+			lex_line(line, index, token_list)
 	return block(path, token_list)
 
 class atomic_number:
@@ -100,6 +87,7 @@ class atomic_number:
 	def __repr__(self):
 		return f"(list: \"{self.token_list}\")"
 
+#temp
 def find_numbers(token_list: list[token]) -> list[atomic_number]:
 	nums = []
 	length = 0
@@ -112,7 +100,7 @@ def find_numbers(token_list: list[token]) -> list[atomic_number]:
 		if index == len(token_list) - 1 and length:
 			nums.append(atomic_number(token_list[-length:]))
 	return nums
-
+#temp
 def find_connections(token_list: list[token]):
 	toks = []
 	for t in token_list:
@@ -123,16 +111,23 @@ def find_connections(token_list: list[token]):
 		elif toks:
 			print(toks)
 			toks = []
+
+class word:
+	token_list: list[token]
+	def __init__(self, token_list: list[token]):
+		self.token_list = token_list
+	def __str__(self):
+		val = ""
+		for t in self.token_list:
+			val += t.value
+		return val
+
 #tests
 if __name__ == "__main__":
 	path = "./test.txt"
 	b = lex_file(path)
-	for token in b.token_list:
-		print(token.__repr__())
+	for t in b.token_list:
+		print(t.__repr__())
 	print("--------------------------")
 	n = find_numbers(b.token_list)
-	#for num in n:
-	#	for token in num.token_list:
-	#		print(token.__repr__())
-	#	print("--------------------------")
-	find_connections(b.token_list)
+	print(word([token("var", 0, 0), token(":", 0, 0), token("myvar", 0, 0)]))

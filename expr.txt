@@ -1,0 +1,56 @@
+V1
+
+KEY_SYMBOL_BRACE_OPEN = "{"
+KEY_SYMBOL_BRACE_CLOSE = "}"
+KEY_SYMBOL_BRACKET_OPEN = "["
+KEY_SYMBOL_BRACKET_CLOSE = "]"
+KEY_SYMBOL_DOT = "."
+KEY_SYMBOL_AT = "@"
+KEY_SYMBOL_COLON = ":"
+KEY_SYMBOL_VBAR = "|"
+KEY_SYMBOL_BIGGER = ">"
+KEY_SYMBOL_EQUAL = "="
+KEY_SYMBOL_LESS = "<"
+KEY_SYMBOL_QUESTION = "?"
+KEY_SYMBOL_QUOTE = "\""
+#(paths: \, /)
+connection:
+    | KEY_SYMBOL_EQUAL
+    | KEY_SYMBOL_BIGGER
+    | KEY_SYMBOL_LESS
+    | KEY_SYMBOL_DOT
+    | KEY_SYMBOL_COLON
+    | KEY_SYMBOL_AT
+    | KEY_SYMBOL_QUESTION
+    | KEY_SYMBOL_VBAR
+    | KEY_SYMBOL_QUOTE
+atom:
+    NUM
+    | TEXT
+expr:
+    | atom
+    | expr connection expr
+    | KEY_SYMBOL_QUOTE expr KEY_SYMBOL_QUOTE
+    | KEY_SYMBOL_BRACE_OPEN expr KEY_SYMBOL_BRACE_CLOSE
+    | KEY_SYMBOL_BRACKET_OPEN expr KEY_SYMBOL_BRACKET_CLOSE
+
+
+V2
+
+TEXT := ("((\\\")|\w|\s)*?")|(\w+)
+CON := [\.:@\?\|]
+ASSIGN := \s*?[<=>]\s*?
+
+word := TEXT(CON+TEXT)*   #PREFIX(var:, sp:, constant:, token:, etc.) are TEXT with CON
+
+
+expr := word(ASSIGN)word
+expr := (word=)?{word*?}
+expr := (word=)?{(word[<=>]word)*}
+
+
+
+
+expr:= atom = atom
+token = \{ atom* \}
+token = \{ token* \}

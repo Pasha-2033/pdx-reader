@@ -1,10 +1,10 @@
-#comment
+#complex comment
 d_effect = {
 	set_variable = {
 		v = -1.1
 	}
 }
-#comment
+text#comment
 struct  =   { #comment
 
 	a   =    10
@@ -32,3 +32,8 @@ abc+={abc{abc
 tech_effect|my_tech
 
 abc={number=-0.1}
+#!pdx:DEBUG_FOCUS_LOG(focus_id) #comment after comment
+###comment#new###
+
+" w \\"\"\" "
+"str\""
