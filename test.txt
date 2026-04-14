@@ -37,3 +37,4 @@ abc={number=-0.1}
 
 " w \\"\"\" "
 "str\""
+has_dlc = " \"# MTG or \\\" NSB" #real comment

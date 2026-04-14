@@ -4,9 +4,10 @@ from utilities import renumerate, nenumerate
 
 class connection(Enum):
 	bracket = r"\{\}\[\]"
-	special = r"\.:@\?\|\"\\"
+	special = r"\.:@\?\|"
 	arithmetic = r"<=>"
 	sign = r"\-"
+	string = r"\"\\"
 
 	def regex() -> str:
 		result = [r"["]
@@ -42,18 +43,22 @@ def lex_comment(text: str, pos_offset: int, line: int, token_list: list[token] =
 	last_index = len(token_list)
 	prev_index = len(text)
 	for index, value in renumerate(text):
-		if value == '#':
+		if value == "#":
 			token_list.insert(last_index, token(text[index:prev_index], line, pos_offset + index))
 			prev_index = index
-		elif value == '\n':
+		elif value == "\n":
 			token_list.insert(last_index, token(value, line, pos_offset + index))
 			prev_index = index
 	return token_list
 
 def lex_line(text: str, line: int, token_list: list[token] = []) -> list[token]:
 	prev_index = 0
+	string_started = False
+	screen = 0
 	for index, value in enumerate(text):
-		if value == '#':
+		if value == "\"" and not screen % 2:
+			string_started = not string_started
+		if value == "#" and not string_started:
 			if prev_index != index:
 				token_list.append(token(text[prev_index:index], line, prev_index))
 			lex_comment(text[index:], index, line, token_list)
@@ -72,6 +77,10 @@ def lex_line(text: str, line: int, token_list: list[token] = []) -> list[token]:
 			prev_index = index + 1
 		elif index == len(text) - 1:
 			token_list.append(token(text[prev_index:], line, prev_index))
+		if value == "\\":
+			screen += 0
+		else:
+			screen = 0
 	return token_list
 
 def lex_file(path: str, token_list: list[token] = []) -> block:
@@ -80,47 +89,6 @@ def lex_file(path: str, token_list: list[token] = []) -> block:
 			lex_line(line, index, token_list)
 	return block(path, token_list)
 
-class atomic_number:
-	token_list:	list[token]
-	def __init__(self, token_list: list[token]):
-		self.token_list = token_list
-	def __repr__(self):
-		return f"(list: \"{self.token_list}\")"
-
-#temp
-def find_numbers(token_list: list[token]) -> list[atomic_number]:
-	nums = []
-	length = 0
-	for index, value in enumerate(token_list):
-		if re.match(r"[\d+\-\.]", value.value):
-			length += 1
-		elif length:
-			nums.append(atomic_number(token_list[index - length:index]))
-			length = 0
-		if index == len(token_list) - 1 and length:
-			nums.append(atomic_number(token_list[-length:]))
-	return nums
-#temp
-def find_connections(token_list: list[token]):
-	toks = []
-	for t in token_list:
-		if re.match(r"[ \t]", t.value):
-			toks.append(t)
-		elif re.match(r"[=><]", t.value):
-			toks.append(t)
-		elif toks:
-			print(toks)
-			toks = []
-
-class word:
-	token_list: list[token]
-	def __init__(self, token_list: list[token]):
-		self.token_list = token_list
-	def __str__(self):
-		val = ""
-		for t in self.token_list:
-			val += t.value
-		return val
 
 #tests
 if __name__ == "__main__":
@@ -128,6 +96,3 @@ if __name__ == "__main__":
 	b = lex_file(path)
 	for t in b.token_list:
 		print(t.__repr__())
-	print("--------------------------")
-	n = find_numbers(b.token_list)
-	print(word([token("var", 0, 0), token(":", 0, 0), token("myvar", 0, 0)]))
