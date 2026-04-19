@@ -46,7 +46,7 @@ word := TEXT(CON+TEXT)*   #PREFIX(var:, sp:, constant:, token:, etc.) are TEXT w
 
 expr := word(ASSIGN)word
 expr := (word=)?{word*?}
-expr := (word=)?{(word[<=>]word)*}
+expr := (word=)?{expr*}
 
 
 

@@ -31,10 +31,12 @@ abc+={abc{abc
 
 tech_effect|my_tech
 
-abc={number=-0.1}
+abc={number=-0..1}
 #!pdx:DEBUG_FOCUS_LOG(focus_id) #comment after comment
 ###comment#new###
 
-" w \\"\"\" "
-"str\""
-has_dlc = " \"# MTG or \\\" NSB" #real comment
+
+"str0\""
+has_dlc = " \"# MTG or \\\" NSB"   #real comment
+a == b
+"str1""str2"
